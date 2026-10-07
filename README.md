@@ -3,7 +3,7 @@
 With `lazyCompilation: { imports: true }`, a module loaded via
 
 ```js
-import("./strings/ar.json", { with: { type: "json" } });
+import("./data/a.json", { with: { type: "json" } });
 ```
 
 is built **as if it had no import attributes**. It matches a `Rule.with: { type: { not: "json" } }` rule
@@ -15,18 +15,8 @@ Versions: `@rsbuild/core` 2.2.12, `@rspack/core` 2.2.8 (latest at the time of wr
 
 ```sh
 npm install
-npm run repro              # headless: exits 1, "BUG REPRODUCED"
-NO_LAZY=1 npm run repro    # control: lazy compilation off, exits 0
-```
-
-`scripts/repro.mjs` starts the Rsbuild dev server. It then does what the browser's lazy-compilation client does when the page
-runs the dynamic imports: it POSTs the proxy module ids to `/_rspack/lazy/trigger`. Then it prints the errors of the resulting compile.
-
-Or in a browser:
-
-```sh
 npm run dev           # open http://localhost:3000 -> error overlay + build errors in the terminal
-npm run dev:no-lazy   # open http://localhost:3000 -> {"static": {"hello":"ar"}, "context": {"hello":"ar"}}
+npm run dev:no-lazy   # open http://localhost:3000 -> {"static": {"value":"a"}, "context": {"value":"b"}}
 ```
 
 ## Setup
@@ -51,8 +41,8 @@ tools: {
 import in [`src/index.js`](./src/index.js) has `with { type: "json" }`:
 
 ```js
-import("./strings/ar.json", { with: { type: "json" } });            // static specifier
-import(`./strings/${locale}.json`, { with: { type: "json" } });     // context module
+import("./data/a.json", { with: { type: "json" } });          // static specifier
+import(`./data/${key}.json`, { with: { type: "json" } });     // context module, key = "b"
 ```
 
 ## Expected
@@ -67,22 +57,22 @@ rebuild sends the real modules through `plainLoader.cjs`. This happens for both 
 ```
 start   build started...
 error   Build errors:
-File: ./src/strings/ar.json:1:1
+File: ./src/data/a.json:1:1
   × Module Error (from .../plainLoader.cjs):
-  │ PLAIN-JSON-REJECTED .../src/strings/ar.json
+  │ PLAIN-JSON-REJECTED .../src/data/a.json
 Import traces (entry → error):
   ./src/index.js
-  ./src/strings/ar.json ×
+  ./src/data/a.json ×
 
-File: ./src/strings/en.json:1:1
+File: ./src/data/b.json:1:1
   × Module Error (from .../plainLoader.cjs):
-  │ PLAIN-JSON-REJECTED .../src/strings/en.json
+  │ PLAIN-JSON-REJECTED .../src/data/b.json
 Import traces (entry → error):
   ./src/index.js
-  ./src/strings|lazy|/^\.\/.*\.json$/|groupOptions: {}|strict namespace object|importAttributes: {"type":"json"}|importPhase: evaluation
-  ./src/strings/en.json ×
+  ./src/data|lazy|/^\.\/.*\.json$/|groupOptions: {}|strict namespace object|importAttributes: {"type":"json"}|importPhase: evaluation
+  ./src/data/b.json ×
 ```
 
 The context module still carries `importAttributes: {"type":"json"}`, and the proxy id is
-`lazy-compilation-proxy|json|.../src/strings/ar.json`. The import attributes seem to get lost on the dependency from the
+`lazy-compilation-proxy|json|.../src/data/a.json`. The import attributes seem to get lost on the dependency from the
 lazy-compilation proxy to the original module, so `Rule.with` is evaluated against empty attributes.

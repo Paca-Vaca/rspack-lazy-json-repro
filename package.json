@@ -5,8 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "rsbuild dev",
-    "dev:no-lazy": "NO_LAZY=1 rsbuild dev",
-    "repro": "node scripts/repro.mjs"
+    "dev:no-lazy": "NO_LAZY=1 rsbuild dev"
   },
   "devDependencies": {
     "@rsbuild/core": "2.2.12"

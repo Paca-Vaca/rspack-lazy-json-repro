@@ -1,11 +1,11 @@
-const locale = window.LOCALE || "ar";
+const key = "b";
 const load = (p) => p.then((m) => m.default ?? m).catch((e) => "ERR " + e.message);
 
 const results = {
     // Static specifier
-    static: await load(import("./strings/ar.json", { with: { type: "json" } })),
+    static: await load(import("./data/a.json", { with: { type: "json" } })),
     // Dynamic specifier (context module)
-    context: await load(import(`./strings/${locale}.json`, { with: { type: "json" } })),
+    context: await load(import(`./data/${key}.json`, { with: { type: "json" } })),
 };
 
 window.__results = results;
